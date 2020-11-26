@@ -15,10 +15,11 @@ namespace explore_ros2
 
         void updatePartialMap(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg);
 
-        // nav2_costmap_2d::Costmap2D *getCostmap() const;
-        // {
-        //     return costmap_;
-        // }
+        const nav2_costmap_2d::Costmap2D *getCostmap() const;
+
+        nav2_costmap_2d::Costmap2D *getCostmap();
+
+        
 
     private:
         nav2_costmap_2d::Costmap2D costmap_;

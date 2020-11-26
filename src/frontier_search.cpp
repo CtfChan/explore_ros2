@@ -10,6 +10,8 @@ namespace explore_ros2
     using nav2_costmap_2d::LETHAL_OBSTACLE;
     using nav2_costmap_2d::NO_INFORMATION;
 
+    FrontierSearch::FrontierSearch() {}
+
     FrontierSearch::FrontierSearch(nav2_costmap_2d::Costmap2D *costmap,
                                    double potential_scale, double gain_scale,
                                    double min_frontier_size)
@@ -206,4 +208,4 @@ namespace explore_ros2
                (gain_scale_ * frontier.size * costmap_->getResolution());
     }
 
-} // namespace frontier_exploration
+} // namespace explore_ros2

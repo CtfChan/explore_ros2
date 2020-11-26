@@ -20,9 +20,7 @@ namespace explore_ros2
     class FrontierSearch
     {
     public:
-        FrontierSearch()
-        {
-        }
+        FrontierSearch();
 
         FrontierSearch(nav2_costmap_2d::Costmap2D *costmap, double potential_scale,
                        double gain_scale, double min_frontier_size);

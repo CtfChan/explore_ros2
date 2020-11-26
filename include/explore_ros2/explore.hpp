@@ -7,6 +7,10 @@
 
 #include "nav_msgs/msg/occupancy_grid.hpp"
 
+#include "tf2_ros/transform_listener.h"
+
+#include "visualization_msgs/msg/marker_array.hpp"
+
 namespace explore_ros2
 {
 
@@ -18,15 +22,46 @@ namespace explore_ros2
     private:
         void mapReceived(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
 
+        void mapUpdateReceived(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg);
+
         void makePlan();
 
+        void visualizeFrontiers(const std::vector<Frontier> &frontiers);
+
+        bool goalOnBlacklist(const geometry_msgs::msg::Point &goal);
+
+        geometry_msgs::msg::Pose getRobotPose() const;
+
+        // publishers and subscribers
         rclcpp::TimerBase::SharedPtr timer_;
-        rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::ConstSharedPtr map_sub_;
+        rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::ConstSharedPtr costmap_sub_;
+        rclcpp::Subscription<map_msgs::msg::OccupancyGridUpdate>::ConstSharedPtr costmap_updates_sub_;
 
-        unsigned int planner_period_ = 10; // in secs
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher_;
+        size_t last_markers_count_; // for clearning prev markers
 
-        Costmap costmap_client_;
+        // tf
+        std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+        std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+
+        // custom classes
+        Costmap costmap_;
         FrontierSearch search_;
+
+        // params
+        double potential_scale_, orientation_scale_, gain_scale_, min_frontier_size_;
+        bool visualize_;
+        double timeout_;
+
+        // places you should stop trying to explore
+        std::vector<geometry_msgs::msg::Point> frontier_blacklist_;
+
+        // remember prev goal
+        geometry_msgs::msg::Point prev_goal_;
+        double prev_distance_;
+        rclcpp::Time last_progress_;
+        rclpp::Duration progress_timeout_;
+        //   ros::Time last_progress_;
     };
 
 } // namespace explore_ros2

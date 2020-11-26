@@ -22,6 +22,7 @@ find_package(nav2_costmap_2d REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(map_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 
 include_directories(
@@ -34,30 +35,36 @@ set(dependencies
   nav_msgs
   map_msgs
   geometry_msgs
+  visualization_msgs
 )
 
+# library
 add_library(explore_ros2_core SHARED
   src/utils.cpp
   src/costmap.cpp
   src/frontier_search.cpp
 )
 ament_target_dependencies(explore_ros2_core ${dependencies})
-
 install(TARGETS explore_ros2_core
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
+# exec
+add_executable(explorer 
+  src/explorer.cpp
+  src/utils.cpp
+  src/costmap.cpp
+  src/frontier_search.cpp
+)
+ament_target_dependencies(explorer ${dependencies})
+target_include_directories(explorer PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+install(TARGETS explorer
+  DESTINATION lib/${PROJECT_NAME})
 
-
-# add_executable(explorer src/explorer.cpp)
-# ament_target_dependencies(explorer ${dependencies})
-# target_include_directories(explorer PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>)
-# install(TARGETS explorer
-#   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # find_package(ament_lint_auto REQUIRED)

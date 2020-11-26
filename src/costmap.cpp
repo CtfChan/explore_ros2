@@ -3,6 +3,16 @@
 namespace explore_ros2
 {
 
+  const nav2_costmap_2d::Costmap2D *Costmap::getCostmap() const
+  {
+    return &costmap_;
+  }
+
+  nav2_costmap_2d::Costmap2D *Costmap::getCostmap()
+  {
+    return &costmap_;
+  }
+
   std::array<unsigned char, 256> init_translation_table()
   {
     std::array<unsigned char, 256> cost_translation_table;
@@ -24,7 +34,6 @@ namespace explore_ros2
   }
 
   static const std::array<unsigned char, 256> cost_translation_table__ = init_translation_table();
-
 
   void Costmap::updateFullMap(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   {
@@ -96,5 +105,8 @@ namespace explore_ros2
       }
     }
   }
+
+
+  
 
 } // namespace explore_ros2
