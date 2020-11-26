@@ -2,8 +2,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "explore_ros2/frontier_search.h"
-#include "explore_ros2/costmap_client.h"
+#include "explore_ros2/frontier_search.hpp"
+#include "explore_ros2/costmap.hpp"
 
 #include "nav_msgs/msg/occupancy_grid.hpp"
 
@@ -25,7 +25,7 @@ namespace explore_ros2
 
         unsigned int planner_period_ = 10; // in secs
 
-        CostmapClient costmap_client_;
+        Costmap costmap_client_;
         FrontierSearch search_;
     };
 

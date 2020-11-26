@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "explore_ros2/explore.h"
+#include "explore_ros2/explore.hpp"
 
 using std::placeholders::_1;
 
