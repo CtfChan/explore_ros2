@@ -2,23 +2,14 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <random>
 
 #include "explore_ros2/explore.hpp"
 
 using std::placeholders::_1;
 
-inline static bool operator==(const geometry_msgs::msg::Point &one,
-                              const geometry_msgs::msg::Point &two)
-{
-  double dx = one.x - two.x;
-  double dy = one.y - two.y;
-  double dist = sqrt(dx * dx + dy * dy);
-  return dist < 0.01;
-}
-
 namespace explore_ros2
 {
-
   Explore::Explore() : Node("explore")
   {
     // read params
@@ -27,8 +18,8 @@ namespace explore_ros2
     this->get_parameter_or<double>("min_frontier_size", min_frontier_size_, 0.5);
     this->get_parameter_or<double>("orientation_scale", orientation_scale_, 0.0);
 
-    this->get_parameter_or<double>("progress_timeout", timeout_, 30.0);
-    progress_timeout_ = rclcpp::Duration(timeout_);
+    this->get_parameter_or<int>("progress_timeout", timeout_, 30);
+    progress_timeout_ = rclcpp::Duration(timeout_, 0.0);
 
     this->get_parameter_or<bool>("visualize", visualize_, true);
 
@@ -57,6 +48,17 @@ namespace explore_ros2
 
     // visualization publisher
     marker_array_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("frontiers", 1);
+
+    // // goal pose publisher
+    // goal_pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose", 1);
+
+    // action client
+    nav_to_pose_client_ = rclcpp_action::create_client<ClientT>(
+        this->get_node_base_interface(),
+        this->get_node_graph_interface(),
+        this->get_node_logging_interface(),
+        this->get_node_waitables_interface(),
+        "navigate_to_pose");
   }
 
   void Explore::mapReceived(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
@@ -119,7 +121,7 @@ namespace explore_ros2
       // stop();
       return;
     }
-    geometry_msgs::Point target_position = frontier->centroid;
+    geometry_msgs::msg::Point target_position = frontier->centroid;
 
     // time out if we are not making any progress
     bool same_goal = prev_goal_ == target_position;
@@ -144,8 +146,38 @@ namespace explore_ros2
     {
       return;
     }
-    
-    // send goal to nav2
+
+    // // send goal to nav2
+
+    // // using topic
+    // geometry_msgs::msg::PoseStamped goal_msg;
+    // RCLCPP_INFO(this->get_logger(), "Sending goal: %f, %f, %f", target_position.x, target_position.y, target_position.z);
+
+    // goal_msg.pose.position = target_position;
+    // goal_msg.pose.orientation.w = 1.;
+    // goal_msg.header.frame_id = "map";
+    // goal_msg.header.stamp = this->now();
+    // goal_pose_publisher_->publish(goal_msg);
+
+    ClientT::Goal client_goal;
+    client_goal.pose.pose.position = target_position;
+    client_goal.pose.pose.orientation.w = 1.;
+    client_goal.pose.header.frame_id = "map";
+    client_goal.pose.header.stamp = this->now();
+
+    auto send_goal_options = rclcpp_action::Client<ClientT>::SendGoalOptions();
+
+    send_goal_options.goal_response_callback =
+        std::bind(&Explore::goalResponseCallback, this, std::placeholders::_1);
+    future_goal_handle_ =
+        nav_to_pose_client_->async_send_goal(client_goal, send_goal_options);
+  }
+
+  void Explore::goalResponseCallback(
+      std::shared_future<rclcpp_action::ClientGoalHandle<ClientT>::SharedPtr> future)
+  {
+    RCLCPP_INFO(this->get_logger(), "Reached Goal");
+
   }
 
   bool Explore::goalOnBlacklist(const geometry_msgs::msg::Point &goal)
@@ -169,91 +201,57 @@ namespace explore_ros2
 
   void Explore::visualizeFrontiers(const std::vector<Frontier> &frontiers)
   {
-    std_msgs::msg::ColorRGBA blue;
-    blue.r = 0;
-    blue.g = 0;
-    blue.b = 1.0;
-    blue.a = 1.0;
-    std_msgs::msg::ColorRGBA red;
-    red.r = 1.0;
-    red.g = 0;
-    red.b = 0;
-    red.a = 1.0;
-    std_msgs::msg::ColorRGBA green;
-    green.r = 0;
-    green.g = 1.0;
-    green.b = 0;
-    green.a = 1.0;
+    static size_t prev_marker_count = 0;
 
-    // ROS_DEBUG("visualising %lu frontiers", frontiers.size());
     visualization_msgs::msg::MarkerArray markers_msg;
-    std::vector<visualization_msgs::msg::Marker> &markers = markers_msg.markers;
-    visualization_msgs::msg::Marker m;
 
+    // recycle m object when adding to marker array
+    visualization_msgs::msg::Marker m;
     m.header.frame_id = "map";
     m.header.stamp = this->now();
-    m.ns = "frontiers";
-    m.scale.x = 1.0;
-    m.scale.y = 1.0;
-    m.scale.z = 1.0;
-    m.color.r = 0;
-    m.color.g = 0;
-    m.color.b = 255;
-    m.color.a = 255;
-    // lives forever
-    // m.lifetime = ros::Duration(0);
-    m.frame_locked = true;
-
-    // weighted frontiers are always sorted
-    double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
-
+    m.ns = "frontier";
+    m.type = visualization_msgs::msg::Marker::SPHERE;
     m.action = visualization_msgs::msg::Marker::ADD;
+    m.scale.x = 0.1;
+    m.scale.y = 0.1;
+    m.scale.z = 0.1;
+    m.color.a = 1.0;
+    m.color.r = 0.0;
+    m.color.g = 1.0;
+    m.color.b = 0.0;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(
+        0, 1); // uniform distribution between 0 and 1
+
     size_t id = 0;
-    for (auto &frontier : frontiers)
+    // add centroid of wavefronts to marker array
+    for (auto &wavefront : frontiers)
     {
-      m.type = visualization_msgs::msg::Marker::POINTS;
-      m.id = int(id);
-      m.pose.position = {};
-      m.scale.x = 0.1;
-      m.scale.y = 0.1;
-      m.scale.z = 0.1;
-      m.points = frontier.points;
-      if (goalOnBlacklist(frontier.centroid))
+      m.color.r = dis(gen);
+      m.color.g = dis(gen);
+      m.color.b = dis(gen);
+      for (auto &pt : wavefront.points)
       {
-        m.color = red;
+        m.id = id++;
+        m.pose.position.x = pt.x;
+        m.pose.position.y = pt.y;
+        m.pose.position.z = 0.0;
+        markers_msg.markers.push_back(m);
       }
-      else
-      {
-        m.color = blue;
-      }
-      markers.push_back(m);
-      ++id;
-      m.type = visualization_msgs::msg::Marker::SPHERE;
-      m.id = int(id);
-      m.pose.position = frontier.initial;
-
-      // scale frontier according to its cost (costier frontiers will be smaller)
-      double scale = std::min(std::abs(min_cost * 0.4 / frontier.cost), 0.5);
-      m.scale.x = scale;
-      m.scale.y = scale;
-      m.scale.z = scale;
-
-      m.points = {};
-      m.color = green;
-      markers.push_back(m);
-      ++id;
     }
-    size_t current_markers_count = markers.size();
+    size_t curr_marker_count = markers_msg.markers.size();
 
-    // delete previous markers, which are now unused
+    // delete prev. markers
     m.action = visualization_msgs::msg::Marker::DELETE;
-    for (; id < last_markers_count_; ++id)
+    for (; id < prev_marker_count; ++id)
     {
       m.id = int(id);
-      markers.push_back(m);
+      markers_msg.markers.push_back(m);
     }
 
-    last_markers_count_ = current_markers_count;
+    prev_marker_count = curr_marker_count;
     marker_array_publisher_->publish(markers_msg);
   }
 
