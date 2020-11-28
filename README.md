@@ -1,6 +1,10 @@
 # explore_ros2
 WIP based on https://github.com/hrnr/m-explore
 
+# Prereq
+
+# Setup
+
 
 
 # Personal Notes
@@ -13,11 +17,12 @@ unit test executable is in `workspace/build/explore_ros2/test`
 
 ros2 launch nav2_bringup just_turtlebot.py
 ros2 launch nav2_bringup slam_launch.py
-
 ros2 launch nav2_bringup navigation_launch.py
 ros2 run explore_ros2 explorer __log_level:=debug
 
 
+
+https://github.com/ros2/examples/tree/master/rclcpp/actions/minimal_action_client
 
 
 --------------

@@ -49,9 +49,6 @@ namespace explore_ros2
     // visualization publisher
     marker_array_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("frontiers", 1);
 
-    // // goal pose publisher
-    // goal_pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose", 1);
-
     // action client
     nav_to_pose_client_ = rclcpp_action::create_client<ClientT>(
         this->get_node_base_interface(),
@@ -147,18 +144,7 @@ namespace explore_ros2
       return;
     }
 
-    // // send goal to nav2
-
-    // // using topic
-    // geometry_msgs::msg::PoseStamped goal_msg;
-    // RCLCPP_INFO(this->get_logger(), "Sending goal: %f, %f, %f", target_position.x, target_position.y, target_position.z);
-
-    // goal_msg.pose.position = target_position;
-    // goal_msg.pose.orientation.w = 1.;
-    // goal_msg.header.frame_id = "map";
-    // goal_msg.header.stamp = this->now();
-    // goal_pose_publisher_->publish(goal_msg);
-
+    // send goal to nav2
     ClientT::Goal client_goal;
     client_goal.pose.pose.position = target_position;
     client_goal.pose.pose.orientation.w = 1.;
@@ -177,8 +163,7 @@ namespace explore_ros2
       std::shared_future<rclcpp_action::ClientGoalHandle<ClientT>::SharedPtr> future)
   {
     RCLCPP_INFO(this->get_logger(), "Reached Goal");
-
-  }
+  }   
 
   bool Explore::goalOnBlacklist(const geometry_msgs::msg::Point &goal)
   {

@@ -48,7 +48,6 @@ namespace explore_ros2
         rclcpp::Subscription<map_msgs::msg::OccupancyGridUpdate>::ConstSharedPtr costmap_updates_sub_;
 
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher_;
-        // rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pose_publisher_;
 
         // action client for nav2
         ActionClient::SharedPtr nav_to_pose_client_;

@@ -1,4 +1,5 @@
 #include "explore_ros2/costmap.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace explore_ros2
 {
@@ -85,10 +86,10 @@ namespace explore_ros2
     if (xn > costmap_xn || x0 > costmap_xn || yn > costmap_yn ||
         y0 > costmap_yn)
     {
-      // ROS_WARN("received update doesn't fully fit into existing map, "
-      //          "only part will be copied. received: [%lu, %lu], [%lu, %lu] "
-      //          "map is: [0, %lu], [0, %lu]",
-      //          x0, xn, y0, yn, costmap_xn, costmap_yn);
+      RCLCPP_WARN(rclcpp::get_logger("Costmap"), "received update doesn't fully fit into existing map, "
+               "only part will be copied. received: [%lu, %lu], [%lu, %lu] "
+               "map is: [0, %lu], [0, %lu]",
+               x0, xn, y0, yn, costmap_xn, costmap_yn);
     }
 
     // update map with data
