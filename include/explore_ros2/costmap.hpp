@@ -17,9 +17,7 @@ namespace explore_ros2
 
         const nav2_costmap_2d::Costmap2D *getCostmap() const;
 
-        nav2_costmap_2d::Costmap2D *getCostmap();
-
-        
+        nav2_costmap_2d::Costmap2D *getCostmap();   
 
     private:
         nav2_costmap_2d::Costmap2D costmap_;

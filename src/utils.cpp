@@ -1,4 +1,5 @@
 #include "explore_ros2/utils.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace explore_ros2
 {
@@ -14,7 +15,7 @@ namespace explore_ros2
 
         if (idx > size_x_ * size_y_ - 1)
         {
-            // ROS_WARN("Evaluating nhood for offmap point");
+            RCLCPP_WARN(rclcpp::get_logger("Costmap"), "Evaluating nhood for offmap point");
             return out;
         }
 

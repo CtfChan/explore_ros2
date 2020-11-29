@@ -73,4 +73,9 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+# install the necessary files directory
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
+install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
+
+
 ament_package()

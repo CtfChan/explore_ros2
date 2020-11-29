@@ -120,6 +120,9 @@ namespace explore_ros2
     }
     geometry_msgs::msg::Point target_position = frontier->centroid;
 
+    
+
+
     // time out if we are not making any progress
     bool same_goal = prev_goal_ == target_position;
     prev_goal_ = target_position;
