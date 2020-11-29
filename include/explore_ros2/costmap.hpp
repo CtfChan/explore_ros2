@@ -19,6 +19,8 @@ namespace explore_ros2
 
         nav2_costmap_2d::Costmap2D *getCostmap();   
 
+        std::string getGlobalFrame();
+
     private:
         nav2_costmap_2d::Costmap2D costmap_;
 

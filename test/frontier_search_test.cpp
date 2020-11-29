@@ -8,7 +8,7 @@ using namespace explore_ros2;
 
 TEST(FrontierSearchTest, EasyTest)
 {
-    ASSERT_EQ(0, 0);
+    FrontierSearch();
 }
 
 int main(int argc, char **argv)

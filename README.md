@@ -32,6 +32,6 @@ $ ros2 launch explore_ros2 explore_demo.py
 # Running Unit Test
 Work in progress...
 
-colcon-test --package-select explore_ros2
+Unit test executable is in `my_ws/build/explore_ros2/test`. Just call `make && ctest` to in this directory to build and run them. If you know a better way please let me know. I believe you can also run with `colcon-test --package-select explore_ros2` but I haven't configured it to do so.
 
-unit test executable is in `workspace/build/explore_ros2/test`
+

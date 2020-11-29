@@ -3,6 +3,9 @@
 
 namespace explore_ros2
 {
+  std::string Costmap::getGlobalFrame() {
+    return global_frame_;
+  }
 
   const nav2_costmap_2d::Costmap2D *Costmap::getCostmap() const
   {

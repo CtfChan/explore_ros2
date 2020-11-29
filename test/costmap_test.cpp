@@ -20,8 +20,10 @@ TEST(CostmapTest, UpdateFullMapTest)
     Costmap costmap;
     costmap.updateFullMap(msg);
 
-    // check values in costmap
-    ASSERT_EQ(0, 0);
+    // verify values
+    auto raw_map = costmap.getCostmap();
+    EXPECT_EQ(raw_map->getSizeInCellsX(), msg->info.width);
+    EXPECT_EQ(raw_map->getSizeInCellsY(), msg->info.height);
 }
 
 int main(int argc, char **argv)

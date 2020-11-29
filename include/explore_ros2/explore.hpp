@@ -15,6 +15,9 @@
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 
+
+#include <mutex>
+
 namespace explore_ros2
 {
 
@@ -74,6 +77,8 @@ namespace explore_ros2
         double prev_distance_;
         rclcpp::Time last_progress_;
         rclcpp::Duration progress_timeout_{0, 0};
+
+        std::mutex mutex_;  // protects sending of actions to nav2
     };
 
 } // namespace explore_ros2

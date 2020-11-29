@@ -121,7 +121,7 @@ namespace explore_ros2
     geometry_msgs::msg::Point target_position = frontier->centroid;
 
     
-
+    std::lock_guard<std::mutex> lck(mutex_);
 
     // time out if we are not making any progress
     bool same_goal = prev_goal_ == target_position;
@@ -166,6 +166,7 @@ namespace explore_ros2
       std::shared_future<rclcpp_action::ClientGoalHandle<ClientT>::SharedPtr> future)
   {
     RCLCPP_INFO(this->get_logger(), "Reached Goal");
+    makePlan();
   }   
 
   bool Explore::goalOnBlacklist(const geometry_msgs::msg::Point &goal)
